@@ -1,0 +1,62 @@
+.side-bar {
+  padding-top: 32px;
+  height: 100%;
+  width: 80px;
+  background-color: rgb(29, 31, 33);
+}
+
+.left-section {
+  width: 360px;
+  height: 100%;
+  padding: 24px;
+  background-color: rgb(41, 43, 47);
+}
+
+.center-section {
+  width: calc(100% - 800px);
+  padding: 12px;
+}
+
+.center-section > .inner {
+  height: 100%;
+  overflow-y: scroll;
+  padding: 24px;
+}
+
+.right-section {
+  width: 360px;
+  height: 100vh;
+  overflow-y: scroll;
+  background-color: rgb(41, 43, 47);
+  padding: 32px;
+}
+
+.right-section > h4 {
+  margin-bottom: 16px;
+}
+
+.center-section > .inner > .record-card {
+  width: 360px;
+  background: rgb(41, 43, 47);
+  margin: 16px 0;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.center-section > .inner > .record-card:hover {
+  background: rgb(43, 45, 49);
+}
+
+.account-sum-card {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: rgb(59, 62, 68);
+}
+
+.account-sum-card:hover {
+  background-color: rgb(64, 67, 73);
+}

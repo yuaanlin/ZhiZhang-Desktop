@@ -1,7 +1,6 @@
-import React, { createRef, useEffect, useMemo, useState } from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import React, {createRef, useEffect, useMemo, useState} from 'react';
+import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 import {
-  AutoComplete,
   Button,
   ControlLabel,
   DatePicker,
@@ -9,15 +8,17 @@ import {
   FormControl,
   FormGroup,
   InputNumber,
-  SelectPicker,
 } from 'rsuite';
 import 'rsuite/dist/styles/rsuite-default.css';
 import './App.global.css';
 import UpdateRecordForm from './components/UpdateRecordForm';
 import IndexedDb from './IndexedDB';
 import BillingRecord from './interface/Record';
-import diffArray from './utils/diffArray';
 import numberWithCommas from './utils/numberWithCommas';
+import * as Realm from 'realm-web';
+
+const REALM_APP_ID = 'yuan-yhreg';
+const app: Realm.App = new Realm.App({id: REALM_APP_ID});
 
 function parseData(data: string) {
   const lines = data.split('\n');
@@ -76,10 +77,19 @@ function getSumOfAccounts(records: BillingRecord[]) {
 const Hello = () => {
   const [records, setRecords] = useState<BillingRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<BillingRecord>();
+  const [user, setUser] = useState<Realm.User>();
 
   const innerRef = createRef<HTMLDivElement>();
 
+  const loginAnonymous = async () => {
+    const user: Realm.User = await app.logIn(Realm.Credentials.anonymous());
+    setUser(user);
+  };
+
   async function refresh() {
+
+    await loginAnonymous();
+    console.log('1');
     const runIndexDb = async () => {
       const indexedDb = new IndexedDb('yuan');
       await indexedDb.createObjectStore(['billing_records']);
@@ -144,42 +154,13 @@ const Hello = () => {
       });
   }, [formData.title]);
 
-  // TODO: don't calculate from records!
-  const possibleCatagory = useMemo(() => {
-    let c = records.map((r) => r.catagory);
-    return diffArray(c);
-  }, [records]);
-
-  // TODO: don't calculate from records!
-  const possibleSubCatagory = useMemo(() => {
-    let c = records.map((r) => r.subCatagory);
-    return diffArray(c);
-  }, [records]);
-
-  // TODO: don't calculate from records!
-  const possibleAccount = useMemo(() => {
-    let c = records.map((r) => r.account);
-    return diffArray(c);
-  }, [records]);
-
-  const possibleTitle = useMemo(() => {
-    let c = records.map((r) => r.title);
-    return diffArray(c);
-  }, [records]);
-
-  const possibleStore = useMemo(() => {
-    let stores = records.map((r) => r.store);
-    return diffArray(stores);
-  }, [records]);
-
-  // TODO: don't calculate from records!
-  const possibleCurrency = useMemo(() => {
-    let c = records.map((r) => r.currency);
-    return diffArray(c);
-  }, [records]);
-
   const sum = useMemo(() => {
     return getSumOfAccounts(records);
+  }, [records]);
+
+  const displayRecords = useMemo(() => {
+    const today = new Date();
+    return records.filter(r => r.time.getMonth() === today.getMonth());
   }, [records]);
 
   async function submit() {
@@ -214,7 +195,7 @@ const Hello = () => {
 
   const downloadTxtFile = () => {
     const element = document.createElement('a');
-    const file = new Blob([JSON.stringify(records)], { type: 'text/plain' });
+    const file = new Blob([JSON.stringify(records)], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
     element.download =
       'YUAN-exported-' + new Date().toLocaleDateString() + '.json';
@@ -225,7 +206,8 @@ const Hello = () => {
   return (
     <>
       <div className="left-section">
-        <input type="file" onChange={showFile} />
+        {user?.id}
+        <input type="file" onChange={showFile}/>
         {Object.keys(sum).map((key) => (
           <div className="account-sum-card">
             <p>{key}</p>
@@ -240,7 +222,7 @@ const Hello = () => {
       </div>
       <div className="center-section">
         <div className="inner" ref={innerRef}>
-          {records.map((record) => (
+          {displayRecords.map((record) => (
             <div
               key={record.id}
               className="record-card"
@@ -252,7 +234,7 @@ const Hello = () => {
                     ? record.subCatagory
                     : record.title}
                 </h5>
-                <p style={{ opacity: 0.5 }}>{record.store}</p>
+                <p style={{opacity: 0.5}}>{record.store}</p>
               </div>
               <div>
                 <p>
@@ -267,12 +249,6 @@ const Hello = () => {
         {selectedRecord ? (
           <UpdateRecordForm
             Record={selectedRecord}
-            possibleAccount={possibleAccount}
-            possibleCatagories={possibleCatagory}
-            possibleCurrencies={possibleCurrency}
-            possibleStores={possibleStore}
-            possibleSubCatagories={possibleSubCatagory}
-            possibleTitles={possibleTitle}
             onUpdated={refresh}
             onCanceled={() => setSelectedRecord(undefined)}
           />
@@ -289,62 +265,24 @@ const Hello = () => {
                 />
               </FormGroup>
               <FormGroup>
-                <ControlLabel>分類</ControlLabel>
-                <FormControl
-                  cleanable={false}
-                  name="catagory"
-                  accepter={SelectPicker}
-                  data={possibleCatagory.map((c) => ({ label: c, value: c }))}
-                />
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>子分類</ControlLabel>
-                <FormControl
-                  cleanable={false}
-                  name="subCatagory"
-                  accepter={SelectPicker}
-                  data={possibleSubCatagory.map((c) => ({
-                    label: c,
-                    value: c,
-                  }))}
-                />
-              </FormGroup>
-              <FormGroup>
                 <ControlLabel>標題</ControlLabel>
-                <FormControl
-                  accepter={AutoComplete}
-                  data={possibleTitle.map((c) => ({ label: c, value: c }))}
-                  name="title"
-                />
+                <FormControl name="title"/>
               </FormGroup>
               <FormGroup>
                 <ControlLabel>帳戶</ControlLabel>
-                <FormControl
-                  cleanable={false}
-                  name="account"
-                  accepter={SelectPicker}
-                  data={possibleAccount.map((c) => ({ label: c, value: c }))}
-                />
+                <FormControl cleanable={false} name="account"/>
               </FormGroup>
               <FormGroup>
                 <ControlLabel>店家</ControlLabel>
-                <FormControl
-                  accepter={AutoComplete}
-                  data={possibleStore}
-                  name="store"
-                />
+                <FormControl name="store"/>
               </FormGroup>
               <FormGroup>
                 <ControlLabel>幣種</ControlLabel>
-                <FormControl
-                  accepter={AutoComplete}
-                  data={possibleCurrency}
-                  name="currency"
-                />
+                <FormControl name="currency"/>
               </FormGroup>
               <FormGroup>
                 <ControlLabel>金額</ControlLabel>
-                <FormControl accepter={InputNumber} step={0.01} name="amount" />
+                <FormControl accepter={InputNumber} step={0.01} name="amount"/>
               </FormGroup>
               <Button appearance="primary" onClick={submit}>
                 送出
@@ -360,12 +298,12 @@ const Hello = () => {
 export default function App() {
   return (
     <React.Fragment>
-      <div className="title-bar" />
+      <div className="title-bar"/>
       <div className="main">
         <Router>
-          <div className="side-bar"></div>
+          <div className="side-bar"/>
           <Switch>
-            <Route path="/" component={Hello} />
+            <Route path="/" component={Hello}/>
           </Switch>
         </Router>
       </div>

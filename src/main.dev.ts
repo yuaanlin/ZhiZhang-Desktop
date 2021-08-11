@@ -1,9 +1,9 @@
 /* eslint global-require: off, no-console: off */
 
 import 'core-js/stable';
-import { app, BrowserWindow, shell } from 'electron';
+import {app, BrowserWindow, shell} from 'electron';
 import log from 'electron-log';
-import { autoUpdater } from 'electron-updater';
+import {autoUpdater} from 'electron-updater';
 import path from 'path';
 import 'regenerator-runtime/runtime';
 import MenuBuilder from './menu';
@@ -65,9 +65,10 @@ const createWindow = async () => {
     height: 1200,
     frame: false,
     icon: getAssetPath('icon.png'),
+    minWidth: 1400,
     titleBarStyle: 'hiddenInset',
     backgroundColor: '#2f3237',
-    webPreferences: { nodeIntegration: true },
+    webPreferences: {nodeIntegration: true},
   });
 
   mainWindow.loadURL(`file://${__dirname}/index.html`);

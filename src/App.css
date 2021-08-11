@@ -35,18 +35,38 @@
   margin-bottom: 16px;
 }
 
-.center-section > .inner > .record-card {
-  width: 360px;
-  background: rgb(41, 43, 47);
-  margin: 16px 0;
-  border-radius: 12px;
-  padding: 12px;
+.record-card-wrapper {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
+  margin: 32px 0;
 }
 
-.center-section > .inner > .record-card:hover {
+.center-section > .inner > div > .record-card {
+  width: 360px;
+  background: rgb(41, 43, 47);
+  position: relative;
+  border-radius: 12px;
+  transition: background-color 0.15s ease-in-out;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  display: flex;
+  cursor: pointer;
+  padding: 12px 12px 32px;
+}
+
+.category-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 0 12px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.center-section > .inner > div > .record-card:hover {
   background: rgb(43, 45, 49);
 }
 

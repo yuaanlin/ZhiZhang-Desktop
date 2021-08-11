@@ -1,4 +1,4 @@
-import React, {createRef, useEffect, useMemo, useState} from 'react';
+import React, {createRef, useEffect, useMemo, useRef, useState} from 'react';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 import {
   Button,
@@ -8,6 +8,7 @@ import {
   FormControl,
   FormGroup,
   InputNumber,
+  SelectPicker,
 } from 'rsuite';
 import 'rsuite/dist/styles/rsuite-default.css';
 import './App.global.css';
@@ -15,13 +16,10 @@ import UpdateRecordForm from './components/UpdateRecordForm';
 import IndexedDb from './IndexedDB';
 import BillingRecord from './interface/Record';
 import numberWithCommas from './utils/numberWithCommas';
-import * as Realm from 'realm-web';
 import parseMozeCSV from './utils/parseMozeCSV';
-import {ApolloProvider, gql, useMutation} from '@apollo/client';
-import {client} from './db/apollo';
-import {MONGODB_REALMS_APP_ID} from './config';
-
-const realmInstance = new Realm.App({id: MONGODB_REALMS_APP_ID})
+import categories, {subCategories} from './categories';
+import Category from './interface/Category';
+import SubCategory from './interface/SubCategory';
 
 function getSumOfAccounts(records: BillingRecord[]) {
   const res: { [account: string]: number } = {};
@@ -39,27 +37,34 @@ function getSumOfAccounts(records: BillingRecord[]) {
   return res;
 }
 
+interface RecordForDisplay {
+  id: number;
+  account: string;
+  currency: string;
+  type: string;
+  category: Category;
+  subCategory: SubCategory;
+  amount: number;
+  fee: number;
+  discount: number;
+  title: string;
+  store: string;
+  time: Date;
+  project: string;
+  description: string;
+  tag: string;
+  target: string;
+}
+
 const Hello = () => {
   const [records, setRecords] = useState<BillingRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<BillingRecord>();
-  const [user, setUser] = useState<Realm.User>();
-
-  const [insertRecord] = useMutation(gql`
-  mutation createPerformance($data: RecordInsertInput) {
-    insertOneRecord(data: $data) { _id }
-  }`);
+  const [options, setOptions] = useState<BillingRecord[]>([]);
+  const [storeOptions, setStoreOptions] = useState<string[]>([]);
 
   const innerRef = createRef<HTMLDivElement>();
 
-  const loginAnonymous = async () => {
-    const user: Realm.User = await realmInstance.logIn(Realm.Credentials.anonymous());
-    setUser(user);
-  };
-
   async function refresh() {
-
-    await loginAnonymous();
-
     const runIndexDb = async () => {
       const indexedDb = new IndexedDb('yuan');
       await indexedDb.createObjectStore(['billing_records']);
@@ -129,9 +134,27 @@ const Hello = () => {
     return getSumOfAccounts(records);
   }, [records]);
 
-  const displayRecords = useMemo(() => {
+  const displayRecords: RecordForDisplay[] = useMemo(() => {
     const today = new Date();
-    return records.filter(r => r.time.getMonth() === today.getMonth());
+    return records.filter(
+      r => Math.abs(r.time.getTime() - today.getTime()) < 60 * 24 * 60 * 60 *
+        1000)
+      .map(r => {
+        const c = categories.find(ca => ca.name === r.catagory);
+        const s = subCategories.find(sc => sc.name === r.subCatagory);
+        return {
+          ...r,
+          category: c ||
+            {name: r.catagory, color: 'gray', icon: '🤔️', subCategories: []},
+          subCategory: s ||
+            {
+              name: r.catagory,
+              color: 'gray',
+              icon: c ? c.icon : '🤔️',
+              category: r.catagory
+            }
+        };
+      });
   }, [records]);
 
   async function submit() {
@@ -174,18 +197,31 @@ const Hello = () => {
     element.click();
   };
 
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+
+  useEffect(() => {
+    setTimeout(async () => {
+      if (formDataRef.current.title.length === 0) return;
+      let d = records.filter(r => r.title.includes(formDataRef.current.title));
+      if (d.length > 5) d = d.slice(0, 5);
+      setOptions(d);
+    }, 100);
+  }, [formData.title]);
+
+  useEffect(() => {
+    setTimeout(async () => {
+      if (formDataRef.current.store.length === 0) return;
+      let d = records.filter(r => r.store.includes(formDataRef.current.store))
+        .map(r => r.store);
+      if (d.length > 5) d = d.slice(0, 5);
+      setStoreOptions(d);
+    }, 100);
+  }, [formData.store]);
+
   return (
     <>
       <div className="left-section">
-        {user?.id}
-        {user && <Button onClick={() => insertRecord({variables: {data: { "title": "test",
-              "description": "gaga",
-              "discount": 0,
-              "amount": -100,
-              "fee": 0,
-              "category": "交通",
-              "sub_category": "計程車",
-              "time": "2021-08-10T12:01:01Z"}}})}>Insert</Button>}
         <input type="file" onChange={showFile}/>
         {Object.keys(sum).map((key) => (
           <div className="account-sum-card">
@@ -202,24 +238,49 @@ const Hello = () => {
       <div className="center-section">
         <div className="inner" ref={innerRef}>
           {displayRecords.map((record) => (
-            <div
-              key={record.id}
-              className="record-card"
-              onClick={() => setSelectedRecord(record)}
-            >
-              <div>
-                <h5>
-                  {record.title.length === 0
-                    ? record.subCatagory
-                    : record.title}
-                </h5>
-                <p style={{opacity: 0.5}}>{record.store}</p>
+            <div key={record.id} className="record-card-wrapper">
+              <div
+                className="record-card"
+                onClick={() => setSelectedRecord({
+                  ...record,
+                  catagory: record.category.name,
+                  subCatagory: record.subCategory.name
+                })}
+              >
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                  <span style={{marginRight: 12, fontSize: 24}}>
+                  {record.subCategory.icon.length === 0
+                    ? record.category.icon
+                    : record.subCategory.icon}
+                  </span>
+                  <div>
+                    <h5>
+                      {record.title.length === 0
+                        ? record.subCategory.name
+                        : record.title}
+                    </h5>
+                    <p style={{opacity: 0.5}}>{record.store}</p>
+                  </div>
+                </div>
+                <div>
+                  <p>
+                    {record.currency} {record.amount}
+                  </p>
+                </div>
+                <div className="category-bar" style={{
+                  backgroundColor: record.category
+                    ? record.category.color
+                    : 'gray'
+                }}>
+
+                  <p>
+                    {record.subCategory.name}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p>
-                  {record.currency} {record.amount}
-                </p>
-              </div>
+              <p style={{opacity: 0.2, marginLeft: 16}}>
+                {record.time.toLocaleDateString()}
+              </p>
             </div>
           ))}
         </div>
@@ -244,16 +305,81 @@ const Hello = () => {
                 />
               </FormGroup>
               <FormGroup>
-                <ControlLabel>標題</ControlLabel>
-                <FormControl name="title"/>
+                <ControlLabel>類別</ControlLabel>
+                <FormControl
+                  searchable={false}
+                  cleanable={false}
+                  menuAutoWidth
+                  name="catagory"
+                  accepter={SelectPicker}
+                  data={categories.map(c => ({
+                    label: c.icon + ' ' + c.name,
+                    value: c.name
+                  }))}/>
               </FormGroup>
               <FormGroup>
-                <ControlLabel>帳戶</ControlLabel>
+                <ControlLabel>子分類</ControlLabel>
+                <FormControl
+                  searchable={false}
+                  cleanable={false}
+                  menuAutoWidth
+                  name="subCatagory"
+                  accepter={SelectPicker}
+                  data={subCategories.filter(
+                    s => s.category === formData.catagory).map(c => ({
+                    label: c.icon + ' ' + c.name,
+                    value: c.name
+                  }))}/>
+              </FormGroup>
+              <FormGroup>
+                <ControlLabel>標題</ControlLabel>
+                <FormControl name="title"/>
+                <div style={{display: 'flex', flexWrap: 'wrap', marginTop: 8}}>
+                  {options.map(opt => <div onClick={() => {
+                    setFormData({
+                      ...formData,
+                      title: opt.title,
+                      catagory: opt.catagory,
+                      subCatagory: opt.subCatagory,
+                      account: opt.account,
+                      currency: opt.currency,
+                      amount: opt.amount,
+                      store: opt.store
+                    });
+                  }} key={opt.id} style={{
+                    backgroundColor: 'rgb(25,27,32)',
+                    padding: 8,
+                    margin: '0 4px',
+                    cursor: 'pointer',
+                    borderRadius: 8
+                  }}>
+                    {opt.title}
+                  </div>)}
+                </div>
+              </FormGroup>
+              <FormGroup>
+                <ControlLabel> 帳戶</ControlLabel>
                 <FormControl cleanable={false} name="account"/>
               </FormGroup>
               <FormGroup>
                 <ControlLabel>店家</ControlLabel>
                 <FormControl name="store"/>
+                <div style={{display: 'flex', flexWrap: 'wrap', marginTop: 8}}>
+                  {storeOptions.map((opt, i) => <div onClick={() => {
+                    setFormData({
+                      ...formData,
+                      store: opt
+                    });
+                  }} key={i} style={{
+                    backgroundColor: 'rgb(25,27,32)',
+                    padding: 8,
+                    margin: '0 4px',
+                    cursor: 'pointer',
+                    borderRadius: 8
+                  }}>
+                    {opt}
+                  </div>)}
+                </div>
               </FormGroup>
               <FormGroup>
                 <ControlLabel>幣種</ControlLabel>
@@ -277,7 +403,6 @@ const Hello = () => {
 export default function App() {
   return (
     <React.Fragment>
-      <ApolloProvider client={client(realmInstance)}>
       <div className="title-bar"/>
       <div className="main">
         <Router>
@@ -287,7 +412,6 @@ export default function App() {
           </Switch>
         </Router>
       </div>
-      </ApolloProvider>
     </React.Fragment>
   );
 }

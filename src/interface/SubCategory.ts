@@ -1,6 +1,7 @@
 interface SubCategory {
-  name: string
-  icon: string
+  category: string;
+  name: string;
+  icon: string;
 }
 
 export default SubCategory;

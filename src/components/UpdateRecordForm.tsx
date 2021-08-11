@@ -7,9 +7,11 @@ import {
   FormControl,
   FormGroup,
   InputNumber,
+  SelectPicker,
 } from 'rsuite';
 import IndexedDb from '../IndexedDB';
 import BillingRecord from '../interface/Record';
+import categories, {subCategories} from '../categories';
 
 function UpdateRecordForm(props: {
   Record: BillingRecord;
@@ -55,6 +57,33 @@ function UpdateRecordForm(props: {
 
   return (
     <Form formValue={formData} onChange={(f: any) => setFormData(f)}>
+      <FormGroup>
+        <ControlLabel>類別</ControlLabel>
+        <FormControl
+          searchable={false}
+          cleanable={false}
+          menuAutoWidth
+          name="catagory"
+          accepter={SelectPicker}
+          data={categories.map(c => ({
+            label: c.icon + ' ' + c.name,
+            value: c.name
+          }))}/>
+      </FormGroup>
+      <FormGroup>
+        <ControlLabel>子分類</ControlLabel>
+        <FormControl
+          searchable={false}
+          cleanable={false}
+          menuAutoWidth
+          name="subCatagory"
+          accepter={SelectPicker}
+          data={subCategories.filter(
+            s => s.category === formData.catagory).map(c => ({
+            label: c.icon + ' ' + c.name,
+            value: c.name
+          }))}/>
+      </FormGroup>
       <FormGroup>
         <ControlLabel>日期</ControlLabel>
         <FormControl name="time" cleanable={false} accepter={DatePicker}/>

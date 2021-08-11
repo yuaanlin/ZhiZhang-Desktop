@@ -16,47 +16,12 @@ import IndexedDb from './IndexedDB';
 import BillingRecord from './interface/Record';
 import numberWithCommas from './utils/numberWithCommas';
 import * as Realm from 'realm-web';
+import parseMozeCSV from './utils/parseMozeCSV';
+import {ApolloProvider, gql, useMutation} from '@apollo/client';
+import {client} from './db/apollo';
+import {MONGODB_REALMS_APP_ID} from './config';
 
-const REALM_APP_ID = 'yuan-yhreg';
-const app: Realm.App = new Realm.App({id: REALM_APP_ID});
-
-function parseData(data: string) {
-  const lines = data.split('\n');
-  const cols = lines.map((l) => l.split(','));
-  const res: BillingRecord[] = [];
-  cols.slice(1, cols.length - 1).map((col, i) => {
-    const d = col[10]?.split('/');
-    const t = col[11]?.split(':');
-    const date = new Date();
-    if (d && t) {
-      date.setFullYear(+d[0]);
-      date.setMonth(+d[1] - 1);
-      date.setDate(+d[2]);
-      date.setHours(+t[0]);
-      date.setMinutes(+t[1]);
-      date.setSeconds(0);
-    }
-    res.push({
-      id: i,
-      account: col[0],
-      currency: col[1],
-      type: col[2],
-      catagory: col[3],
-      subCatagory: col[4],
-      amount: +col[5],
-      fee: +col[6],
-      discount: +col[7],
-      title: col[8],
-      store: col[9],
-      time: date,
-      project: col[12],
-      description: col[13],
-      tag: col[14],
-      target: col[15],
-    });
-  });
-  return res;
-}
+const realmInstance = new Realm.App({id: MONGODB_REALMS_APP_ID})
 
 function getSumOfAccounts(records: BillingRecord[]) {
   const res: { [account: string]: number } = {};
@@ -79,17 +44,22 @@ const Hello = () => {
   const [selectedRecord, setSelectedRecord] = useState<BillingRecord>();
   const [user, setUser] = useState<Realm.User>();
 
+  const [insertRecord] = useMutation(gql`
+  mutation createPerformance($data: RecordInsertInput) {
+    insertOneRecord(data: $data) { _id }
+  }`);
+
   const innerRef = createRef<HTMLDivElement>();
 
   const loginAnonymous = async () => {
-    const user: Realm.User = await app.logIn(Realm.Credentials.anonymous());
+    const user: Realm.User = await realmInstance.logIn(Realm.Credentials.anonymous());
     setUser(user);
   };
 
   async function refresh() {
 
     await loginAnonymous();
-    console.log('1');
+
     const runIndexDb = async () => {
       const indexedDb = new IndexedDb('yuan');
       await indexedDb.createObjectStore(['billing_records']);
@@ -120,8 +90,9 @@ const Hello = () => {
         await indexedDb.createObjectStore(['billing_records']);
         await indexedDb.putBulkValue(
           'billing_records',
-          parseData(text as string)
+          parseMozeCSV(text as string)
         );
+
       };
       runIndexDb();
     };
@@ -207,6 +178,14 @@ const Hello = () => {
     <>
       <div className="left-section">
         {user?.id}
+        {user && <Button onClick={() => insertRecord({variables: {data: { "title": "test",
+              "description": "gaga",
+              "discount": 0,
+              "amount": -100,
+              "fee": 0,
+              "category": "交通",
+              "sub_category": "計程車",
+              "time": "2021-08-10T12:01:01Z"}}})}>Insert</Button>}
         <input type="file" onChange={showFile}/>
         {Object.keys(sum).map((key) => (
           <div className="account-sum-card">
@@ -298,6 +277,7 @@ const Hello = () => {
 export default function App() {
   return (
     <React.Fragment>
+      <ApolloProvider client={client(realmInstance)}>
       <div className="title-bar"/>
       <div className="main">
         <Router>
@@ -307,6 +287,7 @@ export default function App() {
           </Switch>
         </Router>
       </div>
+      </ApolloProvider>
     </React.Fragment>
   );
 }

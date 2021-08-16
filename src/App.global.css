@@ -1,5 +1,6 @@
 @import '~rsuite/dist/styles/rsuite-dark.css';
 @import 'App.css';
+@import 'pages/ProjectPage/index.css';
 
 /* width */
 ::-webkit-scrollbar {
@@ -47,7 +48,6 @@ body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
-  cursor: default;
 }
 
 .title-bar {

@@ -1,8 +1,16 @@
 .side-bar {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
   padding-top: 32px;
   height: 100%;
   width: 80px;
   background-color: rgb(29, 31, 33);
+}
+
+.side-bar > .item {
+  margin-bottom: 36px;
+  cursor: pointer !important;
 }
 
 .left-section {
@@ -41,7 +49,7 @@
   margin: 32px 0;
 }
 
-.center-section > .inner > div > .record-card {
+.record-card {
   width: 360px;
   background: rgb(41, 43, 47);
   position: relative;

@@ -1,7 +1,7 @@
-import { IDBPDatabase, openDB } from 'idb';
+import {IDBPDatabase, openDB} from 'idb';
 
 class IndexedDb {
-  private database: string;
+  private readonly database: string;
   private db: any;
 
   constructor(database: string) {
@@ -23,6 +23,7 @@ class IndexedDb {
           }
         },
       });
+      return true;
     } catch (error) {
       return false;
     }
@@ -31,29 +32,26 @@ class IndexedDb {
   public async getValue(tableName: string, id: number) {
     const tx = this.db.transaction(tableName, 'readonly');
     const store = tx.objectStore(tableName);
-    const result = await store.get(id);
-    return result;
+    return await store.get(id);
   }
 
   public async getAllValue(tableName: string) {
     const tx = this.db.transaction(tableName, 'readonly');
     const store = tx.objectStore(tableName);
-    const result = await store.getAll();
-    return result;
+    return await store.getAll();
   }
 
   public async putValue(tableName: string, value: object) {
     const tx = this.db.transaction(tableName, 'readwrite');
     const store = tx.objectStore(tableName);
-    const result = await store.put(value);
-    return result;
+    return await store.put(value);
   }
 
   public async putBulkValue(tableName: string, values: object[]) {
     const tx = this.db.transaction(tableName, 'readwrite');
     const store = tx.objectStore(tableName);
     for (const value of values) {
-      const result = await store.put(value);
+      await store.put(value);
     }
     return this.getAllValue(tableName);
   }

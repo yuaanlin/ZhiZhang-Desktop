@@ -1,4 +1,4 @@
-import Category from './interface/Category';
+import Category from '../interface/Category';
 
 const categories: Category[] = [
   {
@@ -69,6 +69,13 @@ const categories: Category[] = [
     color: 'rgb(96,87,131)',
     subCategories: ['其他']
   },
+  {
+    name: '收入',
+    icon: '💰',
+    color: 'rgb(154,126,90)',
+    subCategories: ['薪水', '獎金', '生活費']
+  },
+
 ];
 
 export const subCategories = [{'category': '飲食', 'name': '早餐', 'icon': ''},
@@ -155,7 +162,12 @@ export const subCategories = [{'category': '飲食', 'name': '早餐', 'icon': '
   {'category': '學習', 'name': '文具', 'icon': ''},
   {'category': '學習', 'name': '咖啡廳', 'icon': ''},
   {'category': '學習', 'name': '紅包', 'icon': ''},
-  {'category': '其他', 'name': '其他', 'icon': ''}];
+  {'category': '其他', 'name': '其他', 'icon': ''},
+  {'category': '收入', 'name': '獎金', 'icon': ''},
+  {'category': '收入', 'name': '薪水', 'icon': ''},
+  {'category': '收入', 'name': '生活費', 'icon': ''},
+
+];
 
 export default categories;
 

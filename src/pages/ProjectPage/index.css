@@ -1,0 +1,9 @@
+.project-page {
+  display: flex;
+  flex-direction: row;
+}
+
+.project-page > .record-list {
+  height: 100%;
+  overflow-y: scroll;
+}

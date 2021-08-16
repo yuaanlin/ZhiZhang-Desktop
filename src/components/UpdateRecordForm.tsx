@@ -9,50 +9,30 @@ import {
   InputNumber,
   SelectPicker,
 } from 'rsuite';
-import IndexedDb from '../IndexedDB';
-import BillingRecord from '../interface/Record';
-import categories, {subCategories} from '../categories';
+import BillingRecord, {emptyUpdateRecordForm} from '../interface/Record';
+import categories, {subCategories} from '../data/categories';
+import useAppDispatch from '../../hooks/useAppDispatch';
+import {updateRecord} from '../store/record/action';
 
 function UpdateRecordForm(props: {
   Record: BillingRecord;
   onUpdated: () => void;
   onCanceled: () => void;
 }) {
-  const [formData, setFormData] = useState({
-    title: '',
-    store: '',
-    amount: 0,
-    account: '',
-    catagory: '',
-    subCatagory: '',
-    currency: '',
-    time: new Date(),
-  });
+  const dispatch = useAppDispatch();
+  const [formData, setFormData] = useState(emptyUpdateRecordForm);
 
   async function submit() {
-    const runIndexDb = async () => {
-      const indexedDb = new IndexedDb('yuan');
-      await indexedDb.createObjectStore(['billing_records']);
-      const f: BillingRecord = {
-        ...formData,
-        id: props.Record.id,
-        type: formData.amount > 0 ? '收入' : '支出',
-        fee: 0,
-        discount: 0,
-        tag: '',
-        target: '',
-        project: '',
-        amount: +formData.amount,
-        description: '',
-      };
-      await indexedDb.putBulkValue('billing_records', [f]);
-    };
-    await runIndexDb();
+    await dispatch(updateRecord(formData));
     props.onUpdated();
   }
 
   useEffect(() => {
-    if (props.Record) setFormData({...formData, ...props.Record});
+    if (props.Record) setFormData({
+      ...formData, ...props.Record,
+      category: props.Record.catagory,
+      subCategory: props.Record.subCatagory
+    });
   }, [props.Record]);
 
   return (
@@ -63,7 +43,7 @@ function UpdateRecordForm(props: {
           searchable={false}
           cleanable={false}
           menuAutoWidth
-          name="catagory"
+          name="category"
           accepter={SelectPicker}
           data={categories.map(c => ({
             label: c.icon + ' ' + c.name,
@@ -76,10 +56,10 @@ function UpdateRecordForm(props: {
           searchable={false}
           cleanable={false}
           menuAutoWidth
-          name="subCatagory"
+          name="subCategory"
           accepter={SelectPicker}
           data={subCategories.filter(
-            s => s.category === formData.catagory).map(c => ({
+            s => s.category === formData.category).map(c => ({
             label: c.icon + ' ' + c.name,
             value: c.name
           }))}/>
@@ -93,6 +73,10 @@ function UpdateRecordForm(props: {
         <FormControl
           name="title"
         />
+      </FormGroup>
+      <FormGroup>
+        <ControlLabel>專案</ControlLabel>
+        <FormControl name="project"/>
       </FormGroup>
       <FormGroup>
         <ControlLabel>帳戶</ControlLabel>

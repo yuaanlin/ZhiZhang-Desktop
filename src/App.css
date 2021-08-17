@@ -22,13 +22,12 @@
 
 .center-section {
   width: calc(100% - 800px);
-  padding: 12px;
+  position: relative;
 }
 
 .center-section > .inner {
   height: 100%;
   overflow-y: scroll;
-  padding: 24px;
 }
 
 .right-section {
@@ -49,9 +48,35 @@
   margin: 32px 0;
 }
 
+.date-tag {
+  padding: 12px 18px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  font-weight: bolder;
+  opacity: 0.8;
+  margin: 32px 0;
+  font-size: 36px;
+}
+
+.create-record-button {
+  background-color: #c0a61b;
+  cursor: pointer;
+  padding: 24px;
+  border-radius: 72px;
+  position: absolute;
+  bottom: 36px;
+  right: 36px;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.create-record-button:hover {
+  background-color: #e0c120;
+}
+
 .record-card {
   width: 360px;
   background: rgb(41, 43, 47);
+  margin: 0 32px;
   position: relative;
   border-radius: 12px;
   transition: background-color 0.15s ease-in-out;

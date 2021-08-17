@@ -1,6 +1,8 @@
 @import '~rsuite/dist/styles/rsuite-dark.css';
 @import 'App.css';
 @import 'pages/ProjectPage/index.css';
+@import 'pages/ProjectPage/index.css';
+@import 'components/CreateRecordModal/index.css';
 
 /* width */
 ::-webkit-scrollbar {
@@ -53,5 +55,7 @@ body {
 .title-bar {
   width: 100%;
   height: 36px;
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
   background-color: rgb(41, 43, 47);
 }

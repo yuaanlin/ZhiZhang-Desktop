@@ -18,7 +18,7 @@ function groupRecordsByProject(records: BillingRecord[]) {
   return res;
 }
 
-function Index() {
+function ProjectPage() {
 
   const records = useAppSelector<BillingRecord[]>(r => r.record.records);
 
@@ -47,4 +47,4 @@ function Index() {
   </div>;
 }
 
-export default Index;
+export default ProjectPage;

@@ -44,9 +44,6 @@ function RecordCard(props: { record: RecordForDisplay, onClick: (b: BillingRecor
         </p>
       </div>
     </div>
-    <p style={{opacity: 0.2, marginLeft: 16}}>
-      {record.time.toLocaleDateString()}
-    </p>
   </div>;
 }
 

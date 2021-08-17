@@ -1,28 +1,16 @@
-import BillingRecord, {
-  emptyInsertRecordForm,
-  RecordForDisplay
-} from '../../interface/Record';
-import React, {createRef, useEffect, useMemo, useRef, useState} from 'react';
+import BillingRecord, {RecordForDisplay} from '../../interface/Record';
+import React, {createRef, useEffect, useMemo, useState} from 'react';
 import IndexedDb from '../../IndexedDB';
 import parseMozeCSV from '../../utils/parseMozeCSV';
 import categories, {subCategories} from '../../data/categories';
 import accounts from '../../data/account';
 import numberWithCommas from '../../utils/numberWithCommas';
-import {
-  Button,
-  ControlLabel,
-  DatePicker,
-  Form,
-  FormControl,
-  FormGroup,
-  InputNumber,
-  SelectPicker
-} from 'rsuite';
+import {Button, Icon} from 'rsuite';
 import UpdateRecordForm from '../../components/UpdateRecordForm';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
-import {insertRecord} from '../../store/record/action';
 import RecordCard from '../../components/RecordCard';
+import CreateRecordModal from '../../components/CreateRecordModal';
 
 function getSumOfAccounts(records: BillingRecord[]) {
   const res: { [account: string]: number } = {};
@@ -44,8 +32,6 @@ function RecordsPage() {
   const records = useAppSelector<BillingRecord[]>(r => r.record.records);
   const dispatch = useAppDispatch();
   const [selectedRecord, setSelectedRecord] = useState<BillingRecord>();
-  const [options, setOptions] = useState<BillingRecord[]>([]);
-  const [storeOptions, setStoreOptions] = useState<string[]>([]);
 
   const innerRef = createRef<HTMLDivElement>();
 
@@ -68,32 +54,51 @@ function RecordsPage() {
         );
 
       };
-      runIndexDb();
+      await runIndexDb();
     };
     reader.readAsText(e.target.files[0]);
   }
 
-  const [formData, setFormData] = useState(emptyInsertRecordForm);
-
-  useEffect(() => {
-    if (formData.title.length === 0) setOptions([]);
-    const f = records.reverse().find((r) => r.title === formData.title);
-    if (f)
-      setFormData({
-        ...formData,
-        account: f.account,
-        project: f.project,
-        category: f.catagory,
-        subCategory: f.subCatagory,
-        store: f.store,
-        amount: f.amount,
-        currency: f.currency,
-      });
-  }, [formData.title]);
-
   const sum = useMemo(() => {
     return getSumOfAccounts(records);
   }, [records]);
+
+  const renderRecordsWithDate = (records: RecordForDisplay[],
+                                 onClick: (r: BillingRecord) => void) => {
+    if (records.length === 0) return [];
+    let d = records[0].time;
+    const res = [];
+
+    res.push(
+      <div className="date-tag">
+        <p>
+          {d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate()}
+        </p>
+      </div>);
+
+    records.map(r => {
+      if (r.time.getFullYear() !== d.getFullYear() || r.time.getMonth() !==
+        d.getMonth() || r.time.getDate() !== d.getDate()) {
+        d = r.time;
+
+        res.push(
+          <div className="date-tag">
+            <p>
+              {(d.getMonth() + 1) + '月' + d.getDate() + '日'}
+              星期{d.getDay()}
+            </p>
+          </div>);
+      }
+
+      res.push(
+        <RecordCard
+          key={r.id}
+          record={r}
+          onClick={onClick}/>
+      );
+    });
+    return res;
+  };
 
   const displayRecords: RecordForDisplay[] = useMemo(() => {
     const today = new Date();
@@ -116,12 +121,9 @@ function RecordsPage() {
               category: r.catagory
             }
         };
-      });
+      })
+      .sort((a, b) => a.time.getTime() - b.time.getTime());
   }, [records]);
-
-  async function submit() {
-    await dispatch(insertRecord(formData));
-  }
 
   const downloadTxtFile = () => {
     const element = document.createElement('a');
@@ -132,29 +134,6 @@ function RecordsPage() {
     document.body.appendChild(element); // Required for this to work in FireFox
     element.click();
   };
-
-  const formDataRef = useRef(formData);
-  formDataRef.current = formData;
-
-  useEffect(() => {
-    setTimeout(async () => {
-      if (formDataRef.current.title.length === 0) return;
-      let d = records.filter(
-        r => r.title.includes(formDataRef.current.title));
-      if (d.length > 5) d = d.slice(0, 5);
-      setOptions(d);
-    }, 100);
-  }, [formData.title]);
-
-  useEffect(() => {
-    setTimeout(async () => {
-      if (formDataRef.current.store.length === 0) return;
-      let d = records.filter(r => r.store.includes(formDataRef.current.store))
-        .map(r => r.store);
-      if (d.length > 5) d = d.slice(0, 5);
-      setStoreOptions(d);
-    }, 100);
-  }, [formData.store]);
 
   return (
     <>
@@ -177,130 +156,20 @@ function RecordsPage() {
       </div>
       <div className="center-section">
         <div className="inner" ref={innerRef}>
-          {displayRecords.map((record) => (
-            <RecordCard
-              key={record.id}
-              record={record}
-              onClick={setSelectedRecord}/>
-          ))}
+          {renderRecordsWithDate(displayRecords, setSelectedRecord)}
+        </div>
+        <div className="create-record-button" onClick={() => dispatch(
+          {type: 'modal/open', modal: CreateRecordModal})}>
+          <Icon icon="plus"/>
         </div>
       </div>
       <div className="right-section">
-        {selectedRecord ? (
+        {selectedRecord && (
           <UpdateRecordForm
             Record={selectedRecord}
             onUpdated={() => setSelectedRecord(undefined)}
             onCanceled={() => setSelectedRecord(undefined)}
           />
-        ) : (
-          <React.Fragment>
-            <h4>新增紀錄</h4>
-            <Form formValue={formData} onChange={(f: any) => setFormData(f)}>
-              <FormGroup>
-                <ControlLabel>日期</ControlLabel>
-                <FormControl
-                  name="time"
-                  cleanable={false}
-                  accepter={DatePicker}
-                />
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>類別</ControlLabel>
-                <FormControl
-                  searchable={false}
-                  cleanable={false}
-                  menuAutoWidth
-                  name="catagory"
-                  accepter={SelectPicker}
-                  data={categories.map(c => ({
-                    label: c.icon + ' ' + c.name,
-                    value: c.name
-                  }))}/>
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>子分類</ControlLabel>
-                <FormControl
-                  searchable={false}
-                  cleanable={false}
-                  menuAutoWidth
-                  name="subCategory"
-                  accepter={SelectPicker}
-                  data={subCategories.filter(
-                    s => s.category === formData.category).map(c => ({
-                    label: c.icon + ' ' + c.name,
-                    value: c.name
-                  }))}/>
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>標題</ControlLabel>
-                <FormControl name="title"/>
-                <div
-                  style={{display: 'flex', flexWrap: 'wrap', marginTop: 8}}>
-                  {options.map(opt => <div onClick={() => {
-                    setFormData({
-                      ...formData,
-                      title: opt.title,
-                      category: opt.catagory,
-                      subCategory: opt.subCatagory,
-                      account: opt.account,
-                      currency: opt.currency,
-                      amount: opt.amount,
-                      store: opt.store
-                    });
-                  }} key={opt.id} style={{
-                    backgroundColor: 'rgb(25,27,32)',
-                    padding: 8,
-                    margin: '0 4px',
-                    cursor: 'pointer',
-                    borderRadius: 8
-                  }}>
-                    {opt.title}
-                  </div>)}
-                </div>
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>帳戶</ControlLabel>
-                <FormControl cleanable={false} name="account"/>
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>專案</ControlLabel>
-                <FormControl cleanable={false} name="project"/>
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>店家</ControlLabel>
-                <FormControl name="store"/>
-                <div
-                  style={{display: 'flex', flexWrap: 'wrap', marginTop: 8}}>
-                  {storeOptions.map((opt, i) => <div onClick={() => {
-                    setFormData({
-                      ...formData,
-                      store: opt
-                    });
-                  }} key={i} style={{
-                    backgroundColor: 'rgb(25,27,32)',
-                    padding: 8,
-                    margin: '0 4px',
-                    cursor: 'pointer',
-                    borderRadius: 8
-                  }}>
-                    {opt}
-                  </div>)}
-                </div>
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>幣種</ControlLabel>
-                <FormControl name="currency"/>
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>金額</ControlLabel>
-                <FormControl accepter={InputNumber} step={0.01}
-                             name="amount"/>
-              </FormGroup>
-              <Button appearance="primary" onClick={submit}>
-                送出
-              </Button>
-            </Form>
-          </React.Fragment>
         )}
       </div>
     </>

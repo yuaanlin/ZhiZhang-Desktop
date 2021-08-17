@@ -1,0 +1,173 @@
+.side-bar
+  display: flex
+  align-items: center
+  flex-direction: column
+  padding-top: 32px
+  height: 100%
+  width: 80px
+  background-color: rgb(29, 31, 33)
+
+
+.side-bar > .item
+  margin-bottom: 36px
+  cursor: pointer !important
+
+
+.left-section
+  width: 360px
+  height: 100%
+  padding: 24px
+  background-color: rgb(41, 43, 47)
+
+
+.center-section
+  width: calc(100% - 800px)
+  position: relative
+
+
+.center-section > .inner
+  height: 100%
+  overflow-y: scroll
+
+
+.right-section
+  width: 360px
+  height: 100vh
+  overflow-y: scroll
+  background-color: rgb(41, 43, 47)
+  padding: 32px
+
+
+.right-section > h4
+  margin-bottom: 16px
+
+
+.record-card-wrapper
+  display: flex
+  align-items: flex-end
+  margin: 32px 0
+
+
+.date-tag
+  padding: 12px 18px
+  width: 100%
+  background-color: rgba(255, 255, 255, 0.1)
+  font-weight: bolder
+  opacity: 0.8
+  margin: 32px 0
+  font-size: 36px
+
+
+.create-record-button
+  background-color: #c0a61b
+  cursor: pointer
+  padding: 24px
+  border-radius: 72px
+  position: absolute
+  bottom: 36px
+  right: 36px
+  transition: background-color 0.15s ease-in-out
+
+
+.create-record-button:hover
+  background-color: #e0c120
+
+
+.record-card
+  width: 360px
+  background: rgb(41, 43, 47)
+  margin: 0 32px
+  position: relative
+  border-radius: 12px
+  transition: background-color 0.15s ease-in-out
+  justify-content: space-between
+  align-items: center
+  overflow: hidden
+  display: flex
+  cursor: pointer
+  padding: 12px 12px 32px
+
+
+.category-bar
+  position: absolute
+  bottom: 0
+  left: 0
+  width: 100%
+  padding: 0 12px
+  color: white
+  font-size: 12px
+  font-weight: bold
+
+
+.center-section > .inner > div > .record-card:hover
+  background: rgb(43, 45, 49)
+
+
+.account-sum-card
+  margin-top: 16px
+  padding: 12px
+  border-radius: 8px
+  background-color: rgb(59, 62, 68)
+
+
+.account-sum-card:hover
+  background-color: rgb(64, 67, 73)
+
+
+  @import '~rsuite/dist/styles/rsuite-dark.css'
+@import 'components/CreateRecordModal/index.css'
+
+/* width */
+::-webkit-scrollbar
+  width: 10px
+
+
+/* Track */
+::-webkit-scrollbar-track
+  background-color: rgb(40, 45, 49)
+  border-radius: 10px
+
+
+/* Handle */
+::-webkit-scrollbar-thumb
+  background: rgb(29, 31, 33)
+  border-radius: 10px
+
+
+/**
+ *   MAKE ELECTRON APP FEEL MORE NATIVE
+ *
+ *   * Prevent dragging all HTML elements, specially:
+ *   	- images
+ *   	- links (anchors)
+ *
+ *   * Prevent text selection
+ */
+
+body
+  margin: 0
+  padding: 0
+
+.main
+  display: flex
+  background-color: rgba(47, 50, 55, 1)
+  width: 100%
+  height: calc(100vh - 36px)
+  overflow: hidden
+
+
+*,
+*::after,
+*::before
+  -webkit-user-select: none
+  user-select: none
+  -webkit-user-drag: none
+
+
+.title-bar
+  width: 100%
+  height: 36px
+  -webkit-user-select: none
+  -webkit-app-region: drag
+  background-color: rgb(41, 43, 47)
+

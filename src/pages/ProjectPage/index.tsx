@@ -3,6 +3,7 @@ import BillingRecord from '../../interface/Record';
 import useAppSelector from '../../../hooks/useAppSelector';
 import RecordCard from '../../components/RecordCard';
 import convertRecord from '../../utils/convertRecord';
+import './index.global.sass';
 
 function groupRecordsByProject(records: BillingRecord[]) {
   const res: { [project: string]: BillingRecord[] } = {};

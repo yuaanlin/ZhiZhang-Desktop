@@ -1,6 +1,6 @@
 import React from 'react';
-import 'rsuite/dist/styles/rsuite-default.css';
-import './App.global.css';
+import './App.global.sass';
+import './custom-theme.global.less';
 import {Provider} from 'react-redux';
 import store from './store';
 import Router from './router';

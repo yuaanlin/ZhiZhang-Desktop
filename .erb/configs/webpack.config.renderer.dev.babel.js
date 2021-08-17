@@ -3,13 +3,11 @@ import fs from 'fs';
 import webpack from 'webpack';
 import chalk from 'chalk';
 import { merge } from 'webpack-merge';
-import { spawn, execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import baseConfig from './webpack.config.base';
 import CheckNodeEnv from '../scripts/CheckNodeEnv';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 
-// When an ESLint server is running, we can't set the NODE_ENV so we'll check if it's
-// at the dev webpack config is not accidentally run in a production environment
 if (process.env.NODE_ENV === 'production') {
   CheckNodeEnv('development');
 }
@@ -60,42 +58,47 @@ export default merge(baseConfig, {
         use: [
           {
             loader: require.resolve('babel-loader'),
-            options: {
-              plugins: [
-                require.resolve('react-refresh/babel'),
-              ].filter(Boolean),
-            },
+            options: { plugins: [require.resolve('react-refresh/babel'),].filter(Boolean), },
           },
         ],
       },
       {
         test: /\.global\.css$/,
         use: [
-          {
-            loader: 'style-loader',
-          },
+          { loader: 'style-loader', },
           {
             loader: 'css-loader',
-            options: {
-              sourceMap: true,
-            },
+            options: { sourceMap: true, },
           },
         ],
       },
       {
         test: /^((?!\.global).)*\.css$/,
         use: [
-          {
-            loader: 'style-loader',
-          },
+          { loader: 'style-loader', },
           {
             loader: 'css-loader',
             options: {
-              modules: {
-                localIdentName: '[name]__[local]__[hash:base64:5]',
-              },
+              modules: { localIdentName: '[name]__[local]__[hash:base64:5]', },
               sourceMap: true,
               importLoaders: 1,
+            },
+          },
+        ],
+      },
+      {
+        test: /\.(less)$/,
+        use: [
+          { loader: 'style-loader', },
+          {
+            loader: 'css-loader',
+            options: { sourceMap: true, },
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              sourceMap: true,
+              lessOptions: { javascriptEnabled: true }
             },
           },
         ],
@@ -104,43 +107,29 @@ export default merge(baseConfig, {
       {
         test: /\.global\.(scss|sass)$/,
         use: [
-          {
-            loader: 'style-loader',
-          },
+          { loader: 'style-loader', },
           {
             loader: 'css-loader',
-            options: {
-              sourceMap: true,
-            },
+            options: { sourceMap: true, },
           },
-          {
-            loader: 'sass-loader',
-          },
+          { loader: 'sass-loader', },
         ],
       },
       // SASS support - compile all other .scss files and pipe it to style.css
       {
         test: /^((?!\.global).)*\.(scss|sass)$/,
         use: [
-          {
-            loader: 'style-loader',
-          },
-          {
-            loader: '@teamsupercell/typings-for-css-modules-loader',
-          },
+          { loader: 'style-loader', },
+          { loader: '@teamsupercell/typings-for-css-modules-loader', },
           {
             loader: 'css-loader',
             options: {
-              modules: {
-                localIdentName: '[name]__[local]__[hash:base64:5]',
-              },
+              modules: { localIdentName: '[name]__[local]__[hash:base64:5]', },
               sourceMap: true,
               importLoaders: 1,
             },
           },
-          {
-            loader: 'sass-loader',
-          },
+          { loader: 'sass-loader', },
         ],
       },
       // WOFF Font
@@ -215,10 +204,10 @@ export default merge(baseConfig, {
     requiredByDLLConfig
       ? null
       : new webpack.DllReferencePlugin({
-          context: path.join(__dirname, '../dll'),
-          manifest: require(manifest),
-          sourceType: 'var',
-        }),
+        context: path.join(__dirname, '../dll'),
+        manifest: require(manifest),
+        sourceType: 'var',
+      }),
 
     new webpack.NoEmitOnErrorsPlugin(),
 
@@ -234,13 +223,9 @@ export default merge(baseConfig, {
      * By default, use 'development' as NODE_ENV. This can be overriden with
      * 'staging', for example, by changing the ENV variables in the npm scripts
      */
-    new webpack.EnvironmentPlugin({
-      NODE_ENV: 'development',
-    }),
+    new webpack.EnvironmentPlugin({ NODE_ENV: 'development', }),
 
-    new webpack.LoaderOptionsPlugin({
-      debug: true,
-    }),
+    new webpack.LoaderOptionsPlugin({ debug: true, }),
 
     new ReactRefreshWebpackPlugin(),
   ],
@@ -272,13 +257,13 @@ export default merge(baseConfig, {
     },
     before() {
       console.log('Starting Main Process...');
-        spawn('npm', ['run', 'start:main'], {
-          shell: true,
-          env: process.env,
-          stdio: 'inherit',
-        })
-          .on('close', (code) => process.exit(code))
-          .on('error', (spawnError) => console.error(spawnError));
+      spawn('npm', ['run', 'start:main'], {
+        shell: true,
+        env: process.env,
+        stdio: 'inherit',
+      })
+        .on('close', (code) => process.exit(code))
+        .on('error', (spawnError) => console.error(spawnError));
     },
   },
 });

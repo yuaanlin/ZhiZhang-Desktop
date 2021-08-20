@@ -140,7 +140,7 @@ function RecordsPage() {
       <div className="left-section">
         <input type="file" onChange={showFile}/>
         {Object.keys(sum).map((key) => (
-          <div className="account-sum-card">
+          <div key={key} className="account-sum-card">
             <p>{key}</p>
             <h3>
               <span style={{fontSize: 16, marginRight: 6, opacity: 0.5}}>

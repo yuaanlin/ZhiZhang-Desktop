@@ -8,6 +8,7 @@ import {OpenedModal} from '../store/modal/type';
 import RecordsPage from '../pages/RecordsPage';
 import ProjectPage from '../pages/ProjectPage';
 import {closeModal} from '../store/modal/action';
+import AnalysisPage from '../pages/AnalysisPage';
 
 function Router() {
 
@@ -28,6 +29,7 @@ function Router() {
       />)}
     <SideBar/>
     <Switch>
+      <Route path="/analysis" component={AnalysisPage}/>
       <Route path="/project" component={ProjectPage}/>
       <Route path="/" component={RecordsPage}/>
     </Switch>

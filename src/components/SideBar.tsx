@@ -12,6 +12,9 @@ function SideBar() {
     <div className="item" onClick={() => history.push('/project')}>
       <Icon icon="detail" size="2x"/>
     </div>
+    <div className="item" onClick={() => history.push('/analysis')}>
+      <Icon icon="line-chart" size="2x"/>
+    </div>
   </div>;
 }
 

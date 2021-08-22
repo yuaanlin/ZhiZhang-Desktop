@@ -68,7 +68,10 @@ const createWindow = async () => {
     minWidth: 1400,
     titleBarStyle: 'hiddenInset',
     backgroundColor: '#2f3237',
-    webPreferences: {nodeIntegration: true},
+    webPreferences: {
+      nodeIntegration: true,
+      enableRemoteModule: true
+    },
   });
 
   mainWindow.loadURL(`file://${__dirname}/index.html`);

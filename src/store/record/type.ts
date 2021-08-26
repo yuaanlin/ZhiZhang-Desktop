@@ -14,4 +14,12 @@ interface PutRecordAction {
   payload: BillingRecord;
 }
 
-export type RecordAction = SetRecordsAction | PutRecordAction
+interface DeleteRecordAction {
+  type: 'record/remove';
+  payload: number;
+}
+
+export type RecordAction =
+  SetRecordsAction
+  | PutRecordAction
+  | DeleteRecordAction

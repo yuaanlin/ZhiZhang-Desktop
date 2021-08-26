@@ -1,11 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Area, AreaChart, Tooltip, XAxis, YAxis} from 'recharts';
+import {Area, AreaChart, Legend, Tooltip, XAxis, YAxis} from 'recharts';
 import './index.global.sass';
 import BillingRecord from '../../interface/Record';
 import Account from '../../interface/Account';
 import useAppSelector from '../../../hooks/useAppSelector';
 import accounts from '../../data/account';
 import useWindowSize from '../../../hooks/useWindowSize';
+import settings from '../../data/settings';
 
 function buildAnalysisDataByDayFromRecords(options: { records: BillingRecord[], accounts: Account[], from: Date, to: Date }) {
   const res: any[] = [];
@@ -124,27 +125,30 @@ function AnalysisPage() {
       width={(container.current?.clientWidth || 720) - 144} height={360}
       data={data}
     >
+      <Legend verticalAlign="top" height={36}/>
       <defs>
-        <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-          <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
-        </linearGradient>
-        <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-          <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+        {accounts.map(account =>
+          <linearGradient id={account.name} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={account.color} stopOpacity={0.8}/>
+            <stop offset="95%" stopColor={account.color} stopOpacity={0}/>
+          </linearGradient>)
+        }
+        <linearGradient id="total" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor={settings.totalColor} stopOpacity={0.8}/>
+          <stop offset="95%" stopColor={settings.totalColor} stopOpacity={0}/>
         </linearGradient>
       </defs>
       <XAxis dataKey="name"/>
       <YAxis/>
       <Tooltip/>
       {accounts.map(account =>
-        <Area type="monotone" dataKey={account.name} stroke="#8884d8"
+        <Area type="monotone" dataKey={account.name} stroke={account.color}
               fillOpacity={1}
-              fill="url(#colorUv)"/>
+              fill={`url(#${account.name})`}/>
       )}
-      <Area type="monotone" dataKey="total" stroke="#8884d8"
+      <Area type="monotone" dataKey="total" stroke={settings.totalColor}
             fillOpacity={1}
-            fill="url(#colorPv)"/>
+            fill="url(#total)"/>
     </AreaChart>
 
     <h3>季度統計（單位：日）</h3>
@@ -153,27 +157,30 @@ function AnalysisPage() {
       style={{margin: 18}}
       width={(container.current?.clientWidth || 720) - 144} height={360}
       data={dataByDay}>
+      <Legend verticalAlign="top" height={36}/>
       <defs>
-        <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-          <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
-        </linearGradient>
-        <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-          <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+        {accounts.map(account =>
+          <linearGradient id={account.name} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={account.color} stopOpacity={0.8}/>
+            <stop offset="95%" stopColor={account.color} stopOpacity={0.2}/>
+          </linearGradient>)
+        }
+        <linearGradient id="total" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor={settings.totalColor} stopOpacity={0.8}/>
+          <stop offset="95%" stopColor={settings.totalColor} stopOpacity={0.2}/>
         </linearGradient>
       </defs>
       <XAxis dataKey="name"/>
       <YAxis/>
       <Tooltip/>
       {accounts.map(account =>
-        <Area type="monotone" dataKey={account.name} stroke="#8884d8"
+        <Area type="monotone" dataKey={account.name} stroke={account.color}
               fillOpacity={1}
-              fill="url(#colorUv)"/>
+              fill={`url(#${account.name})`}/>
       )}
-      <Area type="monotone" dataKey="total" stroke="#8884d8"
+      <Area type="monotone" dataKey="total" stroke={settings.totalColor}
             fillOpacity={1}
-            fill="url(#colorPv)"/>
+            fill="url(#total)"/>
     </AreaChart>
   </div>;
 }

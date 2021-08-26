@@ -33,6 +33,7 @@ function Index(props: Props) {
 
   async function submit() {
     await dispatch(insertRecord(formData));
+    setFormData(emptyInsertRecordForm);
   }
 
   const formDataRef = useRef(formData);
@@ -50,7 +51,9 @@ function Index(props: Props) {
 
   useEffect(() => {
     if (!isTitleInputFocused) {
-      setOptions([]);
+      setTimeout(() => {
+        setOptions([]);
+      }, 500);
       return;
     }
     setTimeout(async () => {
@@ -85,44 +88,46 @@ function Index(props: Props) {
       <p>新增記帳</p>
     </Modal.Header>
     <Modal.Body>
-      <input
-        onBlur={() => setTitleInputFocused(false)}
-        onFocus={() => setTitleInputFocused(true)}
-        className="record-title-input" placeholder="紀錄標題"
-        value={formData.title}
-        onChange={(e) => setFormData(
-          {...formData, title: e.target.value})}/>
-      <div className="options">
-        {options.map(opt => <div onClick={() => {
-          setFormData({
-            ...formData,
-            title: opt.title,
-            category: opt.catagory,
-            subCategory: opt.subCatagory,
-            account: opt.account,
-            currency: opt.currency,
-            amount: opt.amount,
-            store: opt.store
-          });
-        }} key={opt.id} style={{
-          backgroundColor: 'rgb(25,27,32)',
-          padding: 8,
-          margin: '0 4px',
-          cursor: 'pointer',
-          borderRadius: 8
-        }}>
-          {opt.title}
-        </div>)}
-      </div>
       <Form formValue={formData} onChange={(f: any) => setFormData(f)}>
         <FormGroup>
-          <ControlLabel>日期</ControlLabel>
           <FormControl
-            name="time"
+            value={formData.time}
+            onChangeCalendarDate={(v, _) => setFormData(
+              {...formData, time: v})}
             cleanable={false}
+            inline
             accepter={DatePicker}
           />
         </FormGroup>
+        <input
+          onBlur={() => setTitleInputFocused(false)}
+          onFocus={() => setTitleInputFocused(true)}
+          className="record-title-input" placeholder="紀錄標題"
+          value={formData.title}
+          onChange={(e) => setFormData(
+            {...formData, title: e.target.value})}/>
+        <div className="options">
+          {options.map(opt => <div onClick={() => {
+            setFormData({
+              ...formData,
+              title: opt.title,
+              category: opt.catagory,
+              subCategory: opt.subCatagory,
+              account: opt.account,
+              currency: opt.currency,
+              amount: opt.amount,
+              store: opt.store
+            });
+          }} key={opt.id} style={{
+            backgroundColor: 'rgb(25,27,32)',
+            padding: 8,
+            margin: '0 4px',
+            cursor: 'pointer',
+            borderRadius: 8
+          }}>
+            {opt.title}
+          </div>)}
+        </div>
         <div style={{display: 'flex'}}>
           <FormGroup>
             <ControlLabel>類別</ControlLabel>

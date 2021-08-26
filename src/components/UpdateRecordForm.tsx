@@ -12,7 +12,7 @@ import {
 import BillingRecord, {emptyUpdateRecordForm} from '../interface/Record';
 import categories, {subCategories} from '../data/categories';
 import useAppDispatch from '../../hooks/useAppDispatch';
-import {updateRecord} from '../store/record/action';
+import {deleteRecord, updateRecord} from '../store/record/action';
 
 function UpdateRecordForm(props: {
   Record: BillingRecord;
@@ -37,6 +37,20 @@ function UpdateRecordForm(props: {
 
   return (
     <Form formValue={formData} onChange={(f: any) => setFormData(f)}>
+      <h3>編輯紀錄</h3>
+      <FormGroup>
+        <FormControl inline cleanable={false}
+                     value={formData.time}
+                     onChangeCalendarDate={(v, _) => setFormData(
+                       {...formData, time: v})}
+                     accepter={DatePicker}/>
+      </FormGroup>
+      <FormGroup>
+        <ControlLabel>標題</ControlLabel>
+        <FormControl
+          name="title"
+        />
+      </FormGroup>
       <FormGroup>
         <ControlLabel>類別</ControlLabel>
         <FormControl
@@ -49,9 +63,6 @@ function UpdateRecordForm(props: {
             label: c.icon + ' ' + c.name,
             value: c.name
           }))}/>
-      </FormGroup>
-      <FormGroup>
-        <ControlLabel>子分類</ControlLabel>
         <FormControl
           searchable={false}
           cleanable={false}
@@ -63,16 +74,6 @@ function UpdateRecordForm(props: {
             label: c.icon + ' ' + c.name,
             value: c.name
           }))}/>
-      </FormGroup>
-      <FormGroup>
-        <ControlLabel>日期</ControlLabel>
-        <FormControl name="time" cleanable={false} accepter={DatePicker}/>
-      </FormGroup>
-      <FormGroup>
-        <ControlLabel>標題</ControlLabel>
-        <FormControl
-          name="title"
-        />
       </FormGroup>
       <FormGroup>
         <ControlLabel>專案</ControlLabel>
@@ -101,12 +102,24 @@ function UpdateRecordForm(props: {
         <ControlLabel>金額</ControlLabel>
         <FormControl accepter={InputNumber} step={0.01} name="amount"/>
       </FormGroup>
-      <Button appearance="primary" onClick={submit}>
-        送出
-      </Button>
-      <Button style={{marginLeft: 20}} onClick={props.onCanceled}>
-        取消
-      </Button>
+      <div style={{display: 'flex', justifyContent: 'space-between'}}>
+        <Button
+          onClick={async () => {
+            await dispatch(deleteRecord(formData.id));
+            props.onUpdated();
+          }}
+          color="red">
+          刪除
+        </Button>
+        <div>
+          <Button appearance="primary" onClick={submit}>
+            送出
+          </Button>
+          <Button style={{marginLeft: 20}} onClick={props.onCanceled}>
+            取消
+          </Button>
+        </div>
+      </div>
     </Form>
   );
 }

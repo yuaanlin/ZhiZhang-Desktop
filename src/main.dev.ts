@@ -104,13 +104,6 @@ const createWindow = () => {
   });
 
   new AppUpdater();
-
-  setTimeout(async () => {
-    const {dialog} = require('electron');
-    const res = await autoUpdater.checkForUpdatesAndNotify();
-    await dialog.showMessageBox(
-      {title: 'Hello', message: JSON.stringify(res?.updateInfo)});
-  }, 5000);
 };
 
 app.on('window-all-closed', () => {

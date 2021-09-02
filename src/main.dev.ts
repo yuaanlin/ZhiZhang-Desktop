@@ -1,5 +1,3 @@
-/* eslint global-require: off, no-console: off */
-
 import 'core-js/stable';
 import {app, BrowserWindow, shell} from 'electron';
 import log from 'electron-log';
@@ -8,11 +6,18 @@ import path from 'path';
 import 'regenerator-runtime/runtime';
 import MenuBuilder from './menu';
 
+require('update-electron-app')();
+
+const server = 'https://update.electronjs.org';
+const feed = `${server}/ken20001207/ZhiZhang-Desktop/${process.platform}-${process.arch}/${app.getVersion()}`;
+
+autoUpdater.setFeedURL(feed);
+
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
     autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
+    autoUpdater.checkForUpdatesAndNotify().then();
   }
 }
 
@@ -43,11 +48,11 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
+const {env} = process;
+
 const createWindow = async () => {
-  if (
-    process.env.NODE_ENV === 'development' ||
-    process.env.DEBUG_PROD === 'true'
-  ) {
+
+  if (env.NODE_ENV === 'development' || env.DEBUG_PROD === 'true') {
     await installExtensions();
   }
 
@@ -74,20 +79,21 @@ const createWindow = async () => {
     },
   });
 
-  mainWindow.loadURL(`file://${__dirname}/index.html`);
+  await mainWindow.loadURL(`file://${__dirname}/index.html`);
 
-  // @TODO: Use 'ready-to-show' event
-  //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
   mainWindow.webContents.on('did-finish-load', () => {
+
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
+
     if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {
       mainWindow.show();
       mainWindow.focus();
     }
+
   });
 
   mainWindow.on('closed', () => {
@@ -97,24 +103,15 @@ const createWindow = async () => {
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
 
-  // Open urls in the user's browser
   mainWindow.webContents.on('new-window', (event, url) => {
     event.preventDefault();
     shell.openExternal(url);
   });
 
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
   new AppUpdater();
 };
 
-/**
- * Add event listeners...
- */
-
 app.on('window-all-closed', () => {
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -122,8 +119,6 @@ app.on('window-all-closed', () => {
 
 app.whenReady().then(createWindow).catch(console.log);
 
-app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) createWindow();
+app.on('activate', async () => {
+  if (mainWindow === null) await createWindow();
 });

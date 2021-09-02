@@ -1,7 +1,5 @@
 import BillingRecord, {RecordForDisplay} from '../../interface/Record';
 import React, {createRef, useEffect, useMemo, useState} from 'react';
-import IndexedDb from '../../IndexedDB';
-import parseMozeCSV from '../../utils/parseMozeCSV';
 import categories, {subCategories} from '../../data/categories';
 import accounts from '../../data/account';
 import numberWithCommas from '../../utils/numberWithCommas';
@@ -11,6 +9,7 @@ import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import RecordCard from '../../components/RecordCard';
 import CreateRecordModal from '../../components/CreateRecordModal';
+import getChineseDayNumber from '../../utils/getChineseDayNumber';
 
 function getSumOfAccounts(records: BillingRecord[]) {
   const res: { [account: string]: number } = {};
@@ -40,31 +39,11 @@ function RecordsPage() {
       innerRef.current.scrollTop = innerRef.current.scrollHeight;
   }, [records]);
 
-  async function showFile(e: any) {
-    e.preventDefault();
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const text = ev.target?.result;
-      const runIndexDb = async () => {
-        const indexedDb = new IndexedDb('yuan');
-        await indexedDb.createObjectStore(['billing_records']);
-        await indexedDb.putBulkValue(
-          'billing_records',
-          parseMozeCSV(text as string)
-        );
-
-      };
-      await runIndexDb();
-    };
-    reader.readAsText(e.target.files[0]);
-  }
-
   const sum = useMemo(() => {
     return getSumOfAccounts(records);
   }, [records]);
 
-  const renderRecordsWithDate = (records: RecordForDisplay[],
-                                 onClick: (r: BillingRecord) => void) => {
+  const renderRecordsWithDate = (records: RecordForDisplay[]) => {
     if (records.length === 0) return [];
     let d = records[0].time;
     const res = [];
@@ -85,17 +64,12 @@ function RecordsPage() {
           <div className="date-tag">
             <p>
               {(d.getMonth() + 1) + '月' + d.getDate() + '日'}
-              星期{d.getDay()}
+              星期{getChineseDayNumber(d.getDay())}
             </p>
           </div>);
       }
 
-      res.push(
-        <RecordCard
-          key={r.id}
-          record={r}
-          onClick={onClick}/>
-      );
+      res.push(<RecordCard key={r.id} record={r}/>);
     });
     return res;
   };
@@ -138,7 +112,6 @@ function RecordsPage() {
   return (
     <>
       <div className="left-section">
-        <input type="file" onChange={showFile}/>
         {Object.keys(sum).map((key) => (
           <div key={key} className="account-sum-card">
             <p>{key}</p>
@@ -156,10 +129,13 @@ function RecordsPage() {
       </div>
       <div className="center-section">
         <div className="inner" ref={innerRef}>
-          {renderRecordsWithDate(displayRecords, setSelectedRecord)}
+          {renderRecordsWithDate(displayRecords)}
         </div>
-        <div className="create-record-button" onClick={() => dispatch(
-          {type: 'modal/open', modal: CreateRecordModal})}>
+        <div
+          className="create-record-button"
+          onClick={() => dispatch(
+            {type: 'modal/open', modal: CreateRecordModal})}
+        >
           <Icon icon="plus"/>
         </div>
       </div>

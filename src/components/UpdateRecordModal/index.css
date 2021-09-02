@@ -1,0 +1,21 @@
+.create-record-modal {
+
+}
+
+.record-title-input {
+  background-color: transparent;
+  outline: none;
+  color: #ffffff;
+  border-bottom: solid 3px #303542;
+  border-right: none;
+  border-left: none;
+  border-top: none;
+  font-size: 36px;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  margin-bottom: 24px;
+}

@@ -1,7 +1,8 @@
 {
   "name": "yaun-desktop",
-  "productName": "YUAN",
-  "description": "Accounting App",
+  "productName": "治帳",
+  "description": "記帳 App",
+  "repository": 'htt',
   "scripts": {
     "build": "concurrently \"yarn build:main\" \"yarn build:renderer\"",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
@@ -16,8 +17,8 @@
     "test": "jest"
   },
   "build": {
-    "productName": "YUAN",
-    "appId": "com.linyuanlin.YUAN",
+    "productName": "治帳",
+    "appId": "com.linyuanlin.zhizhang",
     "files": [
       "dist/",
       "node_modules/",
@@ -218,7 +219,8 @@
     "redux-thunk": "^2.3.0",
     "regenerator-runtime": "^0.13.5",
     "rsuite": "^4.10.2",
-    "source-map-support": "^0.5.19"
+    "source-map-support": "^0.5.19",
+    "update-electron-app": "^2.0.1"
   },
   "devEngines": {
     "node": ">=10.x",

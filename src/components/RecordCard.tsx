@@ -1,24 +1,30 @@
 import React from 'react';
-import BillingRecord, {RecordForDisplay} from '../interface/Record';
+import {RecordForDisplay} from '../interface/Record';
+import UpdateRecordModal from './UpdateRecordModal';
+import useAppDispatch from '../../hooks/useAppDispatch';
 
-function RecordCard(props: { record: RecordForDisplay, onClick: (b: BillingRecord) => void }) {
-  const {record, onClick} = props;
+function RecordCard(props: { record: RecordForDisplay }) {
+  const {record} = props;
+  const dispatch = useAppDispatch();
 
   return <div className="record-card-wrapper">
     <div
       className="record-card"
-      onClick={() => onClick({
-        ...record,
-        catagory: record.category.name,
-        subCatagory: record.subCategory.name
-      })}
+      onClick={() => dispatch(
+        {
+          type: 'modal/open',
+          modal: UpdateRecordModal,
+          props: {Record: record}
+        })}
     >
       <div style={{display: 'flex', alignItems: 'center'}}>
-                  <span style={{marginRight: 12, fontSize: 24}}>
-                  {record.subCategory.icon.length === 0
-                    ? record.category.icon
-                    : record.subCategory.icon}
-                  </span>
+
+        <span style={{marginRight: 12, fontSize: 24}}>
+        {record.subCategory.icon.length === 0
+          ? record.category.icon
+          : record.subCategory.icon}
+        </span>
+
         <div>
           <h5>
             {record.title.length === 0

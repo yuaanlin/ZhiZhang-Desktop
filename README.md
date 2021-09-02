@@ -1,5 +1,7 @@
-# YUAN Desktop
+# 治帳 ZhiZhang - Desktop
 
-YUAN, an open source cross-platform accounting application.
+![cover](./cover.png)
 
-> :construction: **This project is still in development.** There will be iOS app and macOS app available in app store soon.
+治帳是一款開源的跨平台記帳軟體，桌面版本基於 React + Electron.js 開發。
+
+ZhiZhang, an open source cross-platform accounting application.

@@ -39,11 +39,12 @@ function UpdateRecordForm(props: {
     <Form formValue={formData} onChange={(f: any) => setFormData(f)}>
       <h3>編輯紀錄</h3>
       <FormGroup>
-        <FormControl inline cleanable={false}
-                     value={formData.time}
-                     onChangeCalendarDate={(v, _) => setFormData(
-                       {...formData, time: v})}
-                     accepter={DatePicker}/>
+        <FormControl
+          inline cleanable={false}
+          value={formData.time}
+          onChangeCalendarDate={(v: Date) => setFormData(
+            {...formData, time: v})}
+          accepter={DatePicker}/>
       </FormGroup>
       <FormGroup>
         <ControlLabel>標題</ControlLabel>

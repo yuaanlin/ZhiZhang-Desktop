@@ -11,7 +11,10 @@ import {
   SelectPicker
 } from 'rsuite';
 import useAppDispatch from '../../../hooks/useAppDispatch';
-import BillingRecord, {emptyInsertRecordForm} from '../../interface/Record';
+import BillingRecord, {
+  emptyUpdateRecordForm,
+  UpdateRecordForm
+} from '../../interface/Record';
 import useAppSelector from '../../../hooks/useAppSelector';
 import {insertRecord} from '../../store/record/action';
 import categories, {subCategories} from '../../data/categories';
@@ -21,13 +24,20 @@ interface Props {
   isOpened: boolean;
   onClose: () => void;
   key: string;
+  Record: BillingRecord;
+  onUpdated: () => void;
 }
 
-function Index(props: Props) {
+function UpdateRecordModal(props: Props) {
 
   const dispatch = useAppDispatch();
   const records = useAppSelector<BillingRecord[]>(r => r.record.records);
-  const [formData, setFormData] = useState(emptyInsertRecordForm);
+  const [formData, setFormData] = useState<UpdateRecordForm>({
+    ...props.Record,
+    category: props.Record.catagory,
+    subCategory: props.Record.subCatagory
+  });
+
   const [storeOptions, setStoreOptions] = useState<string[]>([]);
   const [options, setOptions] = useState<BillingRecord[]>([]);
   const [isTitleInputFocused, setTitleInputFocused] = useState(false);
@@ -35,7 +45,7 @@ function Index(props: Props) {
 
   async function submit() {
     await dispatch(insertRecord(formData));
-    setFormData(emptyInsertRecordForm);
+    setFormData(emptyUpdateRecordForm);
   }
 
   const formDataRef = useRef(formData);
@@ -83,11 +93,14 @@ function Index(props: Props) {
       });
   }, [formData.title]);
 
-  return <Modal show={props.isOpened} className="create-record-modal"
-                backdrop
-                onHide={props.onClose}>
+  return <Modal
+    show={props.isOpened}
+    className="create-record-modal"
+    backdrop
+    onHide={props.onClose}
+  >
     <Modal.Header>
-      <p>新增記帳</p>
+      <p>編輯記帳</p>
     </Modal.Header>
     <Modal.Body>
       <Form formValue={formData} onChange={(f: any) => setFormData(f)}>
@@ -170,8 +183,7 @@ function Index(props: Props) {
             data={accounts.map(c => ({
               label: c.name,
               value: c.name
-            }))}
-          />
+            }))}/>
         </FormGroup>
         <FormGroup>
           <ControlLabel>專案</ControlLabel>
@@ -241,4 +253,4 @@ function Index(props: Props) {
   </Modal>;
 }
 
-export default Index;
+export default UpdateRecordModal;

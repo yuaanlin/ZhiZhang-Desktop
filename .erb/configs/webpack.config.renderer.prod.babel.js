@@ -16,9 +16,7 @@ import DeleteSourceMaps from '../scripts/DeleteSourceMaps';
 CheckNodeEnv('production');
 DeleteSourceMaps();
 
-const devtoolsConfig = process.env.DEBUG_PROD === 'true' ? {
-  devtool: 'source-map'
-} : {};
+const devtoolsConfig = process.env.DEBUG_PROD === 'true' ? { devtool: 'source-map' } : {};
 
 export default merge(baseConfig, {
   ...devtoolsConfig,
@@ -41,6 +39,35 @@ export default merge(baseConfig, {
 
   module: {
     rules: [
+      {
+        test: /\.(less)$/,
+        use: [
+          { loader: 'style-loader', },
+          {
+            loader: 'css-loader',
+            options: { sourceMap: true, },
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              sourceMap: true,
+              lessOptions: { javascriptEnabled: true }
+            },
+          },
+        ],
+      },
+      // SASS support - compile all .global.scss files and pipe it to style.css
+      {
+        test: /\.global\.(scss|sass)$/,
+        use: [
+          { loader: 'style-loader', },
+          {
+            loader: 'css-loader',
+            options: { sourceMap: true, },
+          },
+          { loader: 'sass-loader', },
+        ],
+      },
       {
         test: /.s?css$/,
         use: [
@@ -127,9 +154,7 @@ export default merge(baseConfig, {
     minimize: true,
     minimizer:
       [
-        new TerserPlugin({
-          parallel: true,
-        }),
+        new TerserPlugin({ parallel: true, }),
         new CssMinimizerPlugin(),
       ],
   },
@@ -149,9 +174,7 @@ export default merge(baseConfig, {
       DEBUG_PROD: false,
     }),
 
-    new MiniCssExtractPlugin({
-      filename: 'style.css',
-    }),
+    new MiniCssExtractPlugin({ filename: 'style.css', }),
 
     new BundleAnalyzerPlugin({
       analyzerMode:

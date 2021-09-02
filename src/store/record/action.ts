@@ -4,6 +4,7 @@ import {AppDispatch, RootAction, RootState} from '../index';
 import IndexedDb from '../../IndexedDB';
 import BillingRecord, {
   InsertRecordForm,
+  parseBillingRecord,
   UpdateRecordForm
 } from '../../interface/Record';
 
@@ -12,9 +13,10 @@ export const loadRecordsFromIndexedDB = (): ThunkAction<Promise<void>, {}, {}, A
     const runIndexDb = async () => {
       const indexedDb = new IndexedDb('yuan');
       await indexedDb.createObjectStore(['billing_records']);
-      const recs: BillingRecord[] = await indexedDb.getAllValue(
+      let recs: BillingRecord[] = await indexedDb.getAllValue(
         'billing_records'
       );
+      recs = recs.map(r => parseBillingRecord(r));
       dispatch({type: 'record/set_records', payload: recs});
     };
     await runIndexDb();

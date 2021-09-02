@@ -6,6 +6,8 @@ import path from 'path';
 import 'regenerator-runtime/runtime';
 import MenuBuilder from './menu';
 
+const {env} = process;
+
 require('update-electron-app')();
 
 const server = 'https://update.electronjs.org';
@@ -23,37 +25,30 @@ export default class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-if (process.env.NODE_ENV === 'production') {
+if (env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
 }
 
-if (
-  process.env.NODE_ENV === 'development' ||
-  process.env.DEBUG_PROD === 'true'
-) {
+if (env.NODE_ENV === 'development' || env.DEBUG_PROD === 'true') {
   require('electron-debug')();
 }
 
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+  const forceDownload = !!env.UPGRADE_EXTENSIONS;
   const extensions = ['REACT_DEVELOPER_TOOLS'];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload
-    )
-    .catch(console.log);
+  return installer.default(
+    extensions.map((name) => installer[name]),
+    forceDownload
+  ).catch(console.log);
 };
 
-const {env} = process;
-
-const createWindow = async () => {
+const createWindow = () => {
 
   if (env.NODE_ENV === 'development' || env.DEBUG_PROD === 'true') {
-    await installExtensions();
+    installExtensions().then();
   }
 
   const RESOURCES_PATH = app.isPackaged
@@ -79,7 +74,7 @@ const createWindow = async () => {
     },
   });
 
-  await mainWindow.loadURL(`file://${__dirname}/index.html`);
+  mainWindow.loadURL(`file://${__dirname}/index.html`).then();
 
   mainWindow.webContents.on('did-finish-load', () => {
 
@@ -87,7 +82,7 @@ const createWindow = async () => {
       throw new Error('"mainWindow" is not defined');
     }
 
-    if (process.env.START_MINIMIZED) {
+    if (env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {
       mainWindow.show();
@@ -105,10 +100,17 @@ const createWindow = async () => {
 
   mainWindow.webContents.on('new-window', (event, url) => {
     event.preventDefault();
-    shell.openExternal(url);
+    shell.openExternal(url).then();
   });
 
   new AppUpdater();
+
+  setTimeout(async () => {
+    const {dialog} = require('electron');
+    const res = await autoUpdater.checkForUpdatesAndNotify();
+    await dialog.showMessageBox(
+      {title: 'Hello', message: JSON.stringify(res?.updateInfo)});
+  }, 5000);
 };
 
 app.on('window-all-closed', () => {
@@ -117,8 +119,8 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.whenReady().then(createWindow).catch(console.log);
+app.whenReady().then(createWindow).catch(console.error);
 
-app.on('activate', async () => {
-  if (mainWindow === null) await createWindow();
+app.on('activate', () => {
+  if (mainWindow === null) createWindow();
 });

@@ -35,6 +35,11 @@ interface BillingRecord {
   target: string;
 }
 
+export function parseBillingRecord(data: BillingRecord) {
+  data.time = new Date(data.time);
+  return data;
+}
+
 export default BillingRecord;
 
 export interface InsertRecordForm {

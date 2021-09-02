@@ -10,6 +10,7 @@ import useAppDispatch from '../../../hooks/useAppDispatch';
 import RecordCard from '../../components/RecordCard';
 import CreateRecordModal from '../../components/CreateRecordModal';
 import getChineseDayNumber from '../../utils/getChineseDayNumber';
+import IndexedDb from '../../IndexedDB';
 
 function getSumOfAccounts(records: BillingRecord[]) {
   const res: { [account: string]: number } = {};
@@ -99,6 +100,25 @@ function RecordsPage() {
       .sort((a, b) => a.time.getTime() - b.time.getTime());
   }, [records]);
 
+  function handleImport(e: any) {
+    e.preventDefault();
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const text = ev.target?.result;
+      const runIndexDb = async () => {
+        const indexedDb = new IndexedDb('yuan');
+        await indexedDb.createObjectStore(['billing_records']);
+        await indexedDb.putBulkValue(
+          'billing_records',
+          JSON.parse(text as string)
+        );
+
+      };
+      await runIndexDb();
+    };
+    reader.readAsText(e.target.files[0]);
+  }
+
   const downloadTxtFile = () => {
     const element = document.createElement('a');
     const file = new Blob([JSON.stringify(records)], {type: 'text/plain'});
@@ -126,6 +146,7 @@ function RecordsPage() {
         <Button onClick={downloadTxtFile} appearance="primary">
           匯出為 JSON
         </Button>
+        <input type="file" onChange={handleImport}/>
       </div>
       <div className="center-section">
         <div className="inner" ref={innerRef}>

@@ -16,7 +16,7 @@ import BillingRecord, {
   UpdateRecordForm
 } from '../../interface/Record';
 import useAppSelector from '../../../hooks/useAppSelector';
-import {insertRecord} from '../../store/record/action';
+import {deleteRecord, updateRecord} from '../../store/record/action';
 import categories, {subCategories} from '../../data/categories';
 import accounts from '../../data/account';
 
@@ -38,14 +38,21 @@ function UpdateRecordModal(props: Props) {
     subCategory: props.Record.subCatagory
   });
 
-  const [storeOptions, setStoreOptions] = useState<string[]>([]);
+  const [storeOptions, setStoreOptions] = useState<BillingRecord[]>([]);
   const [options, setOptions] = useState<BillingRecord[]>([]);
   const [isTitleInputFocused, setTitleInputFocused] = useState(false);
   const [mode, setMode] = useState('outcome');
 
   async function submit() {
-    await dispatch(insertRecord(formData));
+    await dispatch(updateRecord(formData));
     setFormData(emptyUpdateRecordForm);
+    props.onUpdated()
+  }
+
+  async function submitDelete() {
+    await dispatch(deleteRecord(formData.id))
+    setFormData(emptyUpdateRecordForm);
+    props.onClose()
   }
 
   const formDataRef = useRef(formData);
@@ -54,8 +61,7 @@ function UpdateRecordModal(props: Props) {
   useEffect(() => {
     setTimeout(async () => {
       if (formDataRef.current.store.length === 0) return;
-      let d = records.filter(r => r.store.includes(formDataRef.current.store))
-        .map(r => r.store);
+      let d = records.filter(r => r.store.includes(formDataRef.current.store));
       if (d.length > 5) d = d.slice(0, 5);
       setStoreOptions(d);
     }, 100);
@@ -76,22 +82,6 @@ function UpdateRecordModal(props: Props) {
       setOptions(d);
     }, 100);
   }, [formData.title, isTitleInputFocused]);
-
-  useEffect(() => {
-    if (formData.title.length === 0) setOptions([]);
-    const f = records.reverse().find((r) => r.title === formData.title);
-    if (f)
-      setFormData({
-        ...formData,
-        account: f.account,
-        project: f.project,
-        category: f.catagory,
-        subCategory: f.subCatagory,
-        store: f.store,
-        amount: f.amount,
-        currency: f.currency,
-      });
-  }, [formData.title]);
 
   return <Modal
     show={props.isOpened}
@@ -197,7 +187,7 @@ function UpdateRecordModal(props: Props) {
             {storeOptions.map((opt, i) => <div onClick={() => {
               setFormData({
                 ...formData,
-                store: opt
+                store: opt.store
               });
             }} key={i} style={{
               backgroundColor: 'rgb(25,27,32)',
@@ -206,7 +196,7 @@ function UpdateRecordModal(props: Props) {
               cursor: 'pointer',
               borderRadius: 8
             }}>
-              {opt}
+              {opt.store}
             </div>)}
           </div>
         </FormGroup>
@@ -246,6 +236,9 @@ function UpdateRecordModal(props: Props) {
       </Form>
     </Modal.Body>
     <Modal.Footer>
+      <Button color="red" onClick={submitDelete}>
+        刪除
+      </Button>
       <Button appearance="primary" onClick={submit}>
         送出
       </Button>

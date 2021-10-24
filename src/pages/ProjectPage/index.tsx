@@ -40,8 +40,7 @@ function ProjectPage() {
             <RecordCard
               key={r.id}
               record={convertRecord(r)}
-              onClick={() => {
-              }}/>
+            />
           )}
       </div>}
     </div>

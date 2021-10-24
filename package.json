@@ -220,6 +220,7 @@
     "regenerator-runtime": "^0.13.5",
     "rsuite": "^4.10.2",
     "source-map-support": "^0.5.19",
+    "tesseract.js": "1",
     "update-electron-app": "^2.0.1"
   },
   "devEngines": {

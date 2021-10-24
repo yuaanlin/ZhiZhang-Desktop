@@ -6,7 +6,7 @@ import {
   Form,
   FormControl,
   FormGroup,
-  InputNumber,
+  Input,
   Modal,
   SelectPicker
 } from 'rsuite';
@@ -41,19 +41,25 @@ function UpdateRecordModal(props: Props) {
   const [storeOptions, setStoreOptions] = useState<BillingRecord[]>([]);
   const [options, setOptions] = useState<BillingRecord[]>([]);
   const [isTitleInputFocused, setTitleInputFocused] = useState(false);
-  const [mode, setMode] = useState('outcome');
+  const [mode, setMode] = useState(
+    props.Record.amount > 0 ? 'income' : 'outcome');
 
   async function submit() {
-    await dispatch(updateRecord(formData));
+    const f = {...formData};
+    f.amount = +amountInput * (mode === 'income' ? 1 : -1);
+    await dispatch(updateRecord(f));
     setFormData(emptyUpdateRecordForm);
-    props.onUpdated()
+    props.onUpdated();
   }
 
   async function submitDelete() {
-    await dispatch(deleteRecord(formData.id))
+    await dispatch(deleteRecord(formData.id));
     setFormData(emptyUpdateRecordForm);
-    props.onClose()
+    props.onClose();
   }
+
+  const [amountInput, setAmountInput] = useState(
+    Math.abs(props.Record.amount).toString());
 
   const formDataRef = useRef(formData);
   formDataRef.current = formData;
@@ -225,11 +231,10 @@ function UpdateRecordModal(props: Props) {
                 {label: '收入', value: 'income'},
                 {label: '支出', value: 'outcome'}
               ]}/>
-            <InputNumber
-              step={0.01}
-              value={Math.abs(formData.amount)}
-              onChange={v => setFormData(
-                {...formData, amount: mode === 'income' ? +v : -v})}
+            <Input
+              style={{width: 240}}
+              value={amountInput}
+              onChange={setAmountInput}
             />
           </div>
         </FormGroup>

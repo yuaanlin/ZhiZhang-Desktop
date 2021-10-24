@@ -23,12 +23,16 @@ export const loadRecordsFromIndexedDB = (): ThunkAction<Promise<void>, {}, {}, A
   };
 };
 
+function uuidv4() {
+  // @ts-ignore
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(
+      16)
+  );
+}
+
 export const insertRecord = (formData: InsertRecordForm): ThunkAction<Promise<any>, RootState, {}, RootAction> => {
-  return async (dispatch, getState): Promise<void> => {
-
-    const sortByIndex = getState().record.records.sort((a, b) => a.id - b.id);
-    const lastId = sortByIndex[sortByIndex.length - 1].id;
-
+  return async (dispatch): Promise<void> => {
     const f: BillingRecord = {
       account: formData.account,
       currency: formData.currency,
@@ -38,7 +42,7 @@ export const insertRecord = (formData: InsertRecordForm): ThunkAction<Promise<an
       type: formData.amount > 0 ? '收入' : '支出',
       fee: 0,
       discount: 0,
-      id: lastId + 1,
+      id: uuidv4(),
       catagory: formData.category,
       subCatagory: formData.subCategory,
       tag: '',

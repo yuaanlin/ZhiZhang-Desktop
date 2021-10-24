@@ -1,9 +1,12 @@
-import BillingRecord, {RecordForDisplay} from '../../interface/Record';
+import BillingRecord, {
+  InsertRecordForm,
+  RecordForDisplay
+} from '../../interface/Record';
 import React, {createRef, useEffect, useMemo, useState} from 'react';
 import categories, {subCategories} from '../../data/categories';
 import accounts from '../../data/account';
 import numberWithCommas from '../../utils/numberWithCommas';
-import {Button, Icon} from 'rsuite';
+import {Alert, Button, Icon} from 'rsuite';
 import UpdateRecordForm from '../../components/UpdateRecordForm';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
@@ -11,6 +14,10 @@ import RecordCard from '../../components/RecordCard';
 import CreateRecordModal from '../../components/CreateRecordModal';
 import getChineseDayNumber from '../../utils/getChineseDayNumber';
 import IndexedDb from '../../IndexedDB';
+import {
+  insertRecord,
+  loadRecordsFromIndexedDB
+} from '../../store/record/action';
 
 function getSumOfAccounts(records: BillingRecord[]) {
   const res: { [account: string]: number } = {};
@@ -115,6 +122,22 @@ function RecordsPage() {
 
       };
       await runIndexDb();
+      await dispatch(loadRecordsFromIndexedDB());
+    };
+    reader.readAsText(e.target.files[0]);
+  }
+
+  function resetAllData() {
+    indexedDB.deleteDatabase('yuan');
+    loadRecordsFromIndexedDB();
+  }
+
+  function handleImport2(e: any) {
+    e.preventDefault();
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const text = ev.target?.result;
+      if (typeof (text) === 'string') handleLines(text.split('\n'));
     };
     reader.readAsText(e.target.files[0]);
   }
@@ -128,6 +151,38 @@ function RecordsPage() {
     document.body.appendChild(element); // Required for this to work in FireFox
     element.click();
   };
+
+  function handleLines(lines: string[]) {
+    let tmp: InsertRecordForm = {
+      category: '其他',
+      subCategory: '其他',
+      account: '中國銀行',
+      amount: 0,
+      currency: 'CNY',
+      project: '',
+      store: '',
+      time: new Date(),
+      title: '自動導入'
+    };
+    lines.map(async line => {
+      if (line.replaceAll(' ', '').includes('交易时间')) {
+        const d = new Date();
+        const month = +line.split(':')[1]?.split('月')[0] - 1;
+        const date = +line.split(':')[1]?.split('月')[1]?.split('日')[0];
+        d.setMonth(month, date);
+        tmp.time = d;
+      }
+      if (line.replaceAll(' ', '').includes('交易金额')) {
+        const amount = +(line.split('币')[1].replaceAll(',', ''));
+        tmp.amount = -1 * amount;
+        if (isNaN(tmp.amount)) {
+          Alert.error('Error: ' + line);
+          return;
+        }
+        await dispatch(insertRecord({...tmp}));
+      }
+    });
+  }
 
   return (
     <>
@@ -161,6 +216,8 @@ function RecordsPage() {
         </div>
       </div>
       <div className="right-section">
+        <Button onClick={resetAllData}>Reset All</Button>
+        <input type="file" onChange={handleImport2}/>
         {selectedRecord && (
           <UpdateRecordForm
             Record={selectedRecord}

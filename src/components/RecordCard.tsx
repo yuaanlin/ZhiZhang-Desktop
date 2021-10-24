@@ -14,7 +14,10 @@ function RecordCard(props: { record: RecordForDisplay }) {
         {
           type: 'modal/open',
           modal: UpdateRecordModal,
-          props: {Record: record}
+          props: {
+            Record: record, onUpdated: () => {
+            }
+          }
         })}
     >
       <div style={{display: 'flex', alignItems: 'center'}}>

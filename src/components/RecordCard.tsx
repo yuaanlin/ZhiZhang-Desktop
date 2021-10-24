@@ -35,7 +35,7 @@ function RecordCard(props: { record: RecordForDisplay }) {
         </div>
       </div>
       <div>
-        <p>
+        <p style={{color: record.amount > 0 ? 'green' : 'red'}}>
           {record.currency} {record.amount}
         </p>
       </div>

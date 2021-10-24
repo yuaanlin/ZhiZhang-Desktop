@@ -162,10 +162,10 @@ body
 *,
 *::after,
 *::before
-  -webkit-user-select: none
   user-select: none
-  -webkit-user-drag: none
 
+input
+  user-select: all !important
 
 .title-bar
   width: 100%
@@ -173,6 +173,3 @@ body
   -webkit-user-select: none
   -webkit-app-region: drag
   background-color: rgb(41, 43, 47)
-
-*
-  transition: all .15s ease-in-out

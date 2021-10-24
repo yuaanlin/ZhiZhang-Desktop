@@ -5,8 +5,7 @@ import {
   DatePicker,
   Form,
   FormControl,
-  FormGroup,
-  InputNumber,
+  FormGroup, Input,
   Modal,
   SelectPicker
 } from 'rsuite';
@@ -32,9 +31,12 @@ function Index(props: Props) {
   const [options, setOptions] = useState<BillingRecord[]>([]);
   const [isTitleInputFocused, setTitleInputFocused] = useState(false);
   const [mode, setMode] = useState('outcome');
+  const [amountInput, setAmountInput] = useState('');
 
   async function submit() {
-    await dispatch(insertRecord(formData));
+    const f= {...formData}
+    f.amount = Math.abs(+amountInput) * (mode === 'income' ? 1 : -1)
+    await dispatch(insertRecord(f));
     setFormData(emptyInsertRecordForm);
   }
 
@@ -223,11 +225,10 @@ function Index(props: Props) {
                 {label: '收入', value: 'income'},
                 {label: '支出', value: 'outcome'}
               ]}/>
-            <InputNumber
-              step={0.01}
-              value={Math.abs(formData.amount)}
-              onChange={v => setFormData(
-                {...formData, amount: mode === 'income' ? +v : -v})}
+            <Input
+              style={{width: 240}}
+              value={amountInput}
+              onChange={setAmountInput}
             />
           </div>
         </FormGroup>

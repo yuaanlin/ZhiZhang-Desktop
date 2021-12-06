@@ -67,7 +67,12 @@ function UpdateRecordModal(props: Props) {
   useEffect(() => {
     setTimeout(async () => {
       if (formDataRef.current.store.length === 0) return;
-      let d = records.filter(r => r.store.includes(formDataRef.current.store));
+      let d = records
+        .sort((r1, r2) => r1.time.getDate() - r2.time.getDate())
+        .filter(r => r.catagory && !r.catagory.includes('調整'))
+        .filter(r => r.store.includes(formDataRef.current.store))
+        .filter((thing, index, self) =>
+          index === self.findIndex((t) => (t.title === thing.title)));
       if (d.length > 5) d = d.slice(0, 5);
       setStoreOptions(d);
     }, 100);
@@ -82,8 +87,12 @@ function UpdateRecordModal(props: Props) {
     }
     setTimeout(async () => {
       if (formDataRef.current.title.length === 0) return;
-      let d = records.filter(
-        r => r.title.includes(formDataRef.current.title));
+      let d = records
+        .sort((r1, r2) => r1.time.getDate() - r2.time.getDate())
+        .filter(r => r.catagory && !r.catagory.includes('調整'))
+        .filter(r => r.title.includes(formDataRef.current.title))
+        .filter((thing, index, self) =>
+          index === self.findIndex((t) => (t.title === thing.title)));
       if (d.length > 5) d = d.slice(0, 5);
       setOptions(d);
     }, 100);

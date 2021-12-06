@@ -72,7 +72,7 @@ function UpdateRecordModal(props: Props) {
         .filter(r => r.catagory && !r.catagory.includes('調整'))
         .filter(r => r.store.includes(formDataRef.current.store))
         .filter((thing, index, self) =>
-          index === self.findIndex((t) => (t.title === thing.title)));
+          index === self.findIndex((t) => (t.store === thing.store)));
       if (d.length > 5) d = d.slice(0, 5);
       setStoreOptions(d);
     }, 100);

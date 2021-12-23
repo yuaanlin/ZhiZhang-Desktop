@@ -144,7 +144,11 @@ function RecordsPage() {
 
   const downloadTxtFile = () => {
     const element = document.createElement('a');
-    const file = new Blob([JSON.stringify(records)], {type: 'text/plain'});
+    const file = new Blob([JSON.stringify(
+        records.sort((a, b) =>
+          b.time.getTime() - a.time.getTime()),
+        null, 2)],
+      {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
     element.download =
       'YUAN-exported-' + new Date().toLocaleDateString() + '.json';
